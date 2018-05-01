@@ -13,9 +13,9 @@ function main()
     camera.position.set( 0, 0, 5 );
     scene.add( camera );
 
-    /*var light = new THREE.PointLight();
+    var light = new THREE.PointLight();
     light.position.set( 5, 5, 5 );
-    scene.add( light );*/
+    scene.add( light );
 
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize( width, height );
@@ -68,7 +68,7 @@ function main()
     material.vertexColors = THREE.FaceColors;
     for ( var i = 0; i < nfaces; i++ )
     {
-        geometry.faces[i].color = new THREE.Color(255, 255, 0);
+        geometry.faces[i].color = new THREE.Color(0, 1, 0);
     }
 
     geometry.computeFaceNormals();

@@ -11,14 +11,13 @@ function main()
     var far = 1000;
 
    
-    var camera_left = new THREE.PerspectiveCamera( fov, aspect, near, far );
-    camera_left.position.set( 0, 0, 5 );
-    scene.add( camera_left );
-
-    var camera_right = new THREE.PerspectiveCamera( fov, aspect, near, far);
-    camera_right.position.set( 10, 10, 5);
-    scene.add( camera_right );
-
+    var camera_1 = new THREE.PerspectiveCamera( fov, aspect, near, far );
+    var camera_2 = new THREE.PerspectiveCamera( fov, aspect, near, far);
+    camera_1.position.set( 0, 0, 5 );
+    camera_2.position.set( 10, 10, 5);
+    scene.add( camera_1 );
+    scene.add( camera_2);
+   
     
     var light = new THREE.PointLight();
     light.position.set( 5, 5, 5 );
@@ -38,7 +37,7 @@ function main()
 	fragmentShader: document.getElementById('gouraud.frag').text,
 	uniforms: {
 	    light_position: {type: 'v3',value: light.position},
-	    camera_position: {type: 'v3',value: camera_left.position}
+	    camera_position: {type: 'v3',value: camera_1.position}
 	}  
     });
 
@@ -48,7 +47,7 @@ function main()
 	fragmentShader: document.getElementById('phong.frag').text,
 	uniforms: {
 	    light_position: {type: 'v3',value: light.position},
-	    camera_position: {type: 'v3',value: camera_right.position}
+	    camera_position: {type: 'v3',value: camera_2.position}
 	}  
     });
    
@@ -66,10 +65,10 @@ function main()
     var screen_height = window.innerHeight;
 
     renderer.setSize( screen_width, screen_height);
-    camera_left.aspect = 0.5 * screen_width / screen_height;
-    camera_right.aspect = 0.5 * screen_width / screen_height;
-    camera_left.updateProjectionMatrix();
-    camera_right.updateProjectionMatrix();
+    camera_1.aspect = 0.5 * screen_width / screen_height;
+    camera_2.aspect = 0.5 * screen_width / screen_height;
+    camera_1.updateProjectionMatrix();
+    camera_2.updateProjectionMatrix();
     
     function loop()
     {
@@ -85,10 +84,10 @@ function main()
 	renderer.clear();
 	
 	renderer.setViewport(0.1*screen_width, 0.2*screen_height, 0.8*width, 0.5*screen_height);
-        renderer.render( scene, camera_left);
+        renderer.render( scene, camera_1);
 
 	renderer.setViewport( 0.6*screen_width, 0.2*screen_height, 0.8*width, 0.5*screen_height);
-        renderer.render( scene, camera_right);
+        renderer.render( scene, camera_2);
     }
 }
 

@@ -83,8 +83,11 @@ function main()
     {
         var id = faces[i];
         var S0 = scalars[ id[0] ];
+	document.write(S0);
         var S1 = scalars[ id[1] ];
         var S2 = scalars[ id[2] ];
+	document.write(S1);
+	document.write(S2);
         var C0 = new THREE.Color().setHex( cmap[ S0 ][1] );
         var C1 = new THREE.Color().setHex( cmap[ S1 ][1] );
         var C2 = new THREE.Color().setHex( cmap[ S2 ][1] );

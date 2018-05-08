@@ -39,11 +39,11 @@ function main()
 
     // Create color map
     var cmap = [];
-    for ( var i = 0; i < 0.81; i=i+0.1 )
+    for ( var i = 0; i < 256; i++ )
     {
-        var S = i ; // [0,0.8]
-        var R = Math.max( Math.cos( ( S - 0.8 ) * Math.PI ), 0.0 );
-        var G = Math.max( Math.cos( ( S - 0.4 ) * Math.PI ), 0.0 );
+        var S = i/255.0 ;
+        var R = 1;
+        var G = Math.max( Math.cos( S * Math.PI ), 0.0 );
         var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
         var color = new THREE.Color( R, G, B );
         cmap.push( [ S, '0x' + color.getHexString() ] );
@@ -82,9 +82,9 @@ function main()
     for ( var i = 0; i < nfaces; i++ )
     {
         var id = faces[i];
-        var S0 = scalars[ id[0] ]*10;
-        var S1 = scalars[ id[1] ]*10;
-        var S2 = scalars[ id[2] ]*10;
+        var S0 = Math.round(((scalars[ id[0] ] - 0.1 )/0.7) * 255);
+	var S1 = Math.round(((scalars[ id[1] ] - 0.1 )/0.7) * 255);
+        var S2 = Math.round(((scalars[ id[2] ] - 0.1 )/0.7) * 255);
         var C0 = new THREE.Color().setHex( cmap[ S0 ][1] );
         var C1 = new THREE.Color().setHex( cmap[ S1 ][1] );
         var C2 = new THREE.Color().setHex( cmap[ S2 ][1] );

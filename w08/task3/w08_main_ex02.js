@@ -24,31 +24,34 @@ function main()
     var vertices = [
         [ -1,  1, 0 ], // 0
         [ -1, -1, 0 ], // 1
-        [  1, -1, 0 ]  // 2
+        [  1, -1, 0 ], // 2
+	[  1,  1, 0 ]  // 3
     ];
 
     var faces = [
         [ 0, 1, 2 ], // f0
+	[ 0, 2, 3 ]  // f1
     ];
 
     var scalars = [
-        0,   // S0
-        128, // S1
-        255  // S2
+        0.1,  // S0
+        0.2,  // S1
+        0.8,  // S2
+	0.5   // S3
     ];
 
     // Create color map
     var cmap = [];
-    for ( var i = 0; i < 256; i++ )
+     for ( var i = 0; i < 256; i++ )
     {
-        var S = i / 255.0; // [0,1]
+	var S = i / 255.0;       
         var R = Math.max( Math.cos( ( S - 1.0 ) * Math.PI ), 0.0 );
         var G = Math.max( Math.cos( ( S - 0.5 ) * Math.PI ), 0.0 );
         var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
         var color = new THREE.Color( R, G, B );
         cmap.push( [ S, '0x' + color.getHexString() ] );
     }
-
+    
     // Draw color map
     var lut = new THREE.Lut( 'rainbow', cmap.length );
     lut.addColorMap( 'mycolormap', cmap );
@@ -82,9 +85,9 @@ function main()
     for ( var i = 0; i < nfaces; i++ )
     {
         var id = faces[i];
-        var S0 = scalars[ id[0] ];
-        var S1 = scalars[ id[1] ];
-        var S2 = scalars[ id[2] ];
+	var S0 = Math.round(((scalars[ id[0] ] - 0.1 )/0.7) * 255);
+        var S1 = Math.round(((scalars[ id[1] ] - 0.1 )/0.7) * 255);
+	var S2 = Math.round(((scalars[ id[2] ] - 0.1 )/0.7) * 255);
         var C0 = new THREE.Color().setHex( cmap[ S0 ][1] );
         var C1 = new THREE.Color().setHex( cmap[ S1 ][1] );
         var C2 = new THREE.Color().setHex( cmap[ S2 ][1] );

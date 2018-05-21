@@ -114,35 +114,16 @@ function Isosurfaces( volume, point, normal )
         return index;
     }
 
-    function interpolated_vertex( v0, v1 )
+    function interpolated_vertex( v0, v1 , s )
     {
-	if( v0.x != v1.x ){
-	    var s0 = v0.x;
-	    var s1 = v1.x;
-	    var s =  (-coef.y * v0.y - coef.z * v0.z -coef.w) / coef.x;
-	}
-	if( v0.y != v1.y ){
-	    var s0 = v0.y;
-	    var s1 = v1.y;
-	    var s =   (-coef.x * v0.x - coef.z * v0.z -coef.w) / coef.y;
-	}
-	if( v0.z != v1.z ){
-	    var s0 = v0.z;
-	    var s1 = v1.z;
-	    var s =  (-coef.x * v0.x - coef.y * v0.y -coef.w) / coef.z;
-	}
-
-	var p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
-	var x = ( v1.x - v0.x)*p/2 + ( v0.x + v1.x ) / 2;
-
-	p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-	var y = ( v1.y - v0.y ) * p / 2 + ( v0.y + v1.y ) / 2;
-
-	p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
-	var z = ( v1.z - v0.z ) * p / 2 + ( v0.z + v1.z ) / 2;
-
-	
-        return new THREE.Vector3( x , y , z );
+	var lines = volume.resolution.x;
+        var slices = volume.resolution.x * volume.resolution.y;
+	var id_v0 = v0.x + lines * v0.y +  slices * v0.z;
+	var id_v1 = v1.x + lines * v1.y +  slices * v1.z;
+	var s0 = volume.values[ id_v0 ][0];
+	var s1 = volume.values[ id_v1 ][0];
+	var t = (s - s0)/(s1 - s0);
+        return new THREE.Vector3().lerpVectors( v0, v1, t );
     }
 
     function interpolated_value( v0, v1 )

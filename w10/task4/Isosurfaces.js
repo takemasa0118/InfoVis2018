@@ -1,14 +1,19 @@
-function Isosurfaces( volume, isovalue )
+function Isosurfaces( volume, point, normal )
 {
+    //var w = point.clone().multiplyScalar( -1 ).dot( normal );
+    var w = -normal.x * point.x - normal.y * point.y - normal.z * point.z;
+    var coef = new THREE.Vector4( normal.x, normal.y, normal.z, w );
+
     var geometry = new THREE.Geometry();
-    var material = new THREE.MeshLambertMaterial();
+    var material = new THREE.MeshBasicMaterial();
+    material.vertexColors = THREE.VertexColors;
+    material.side = THREE.DoubleSide;
+
+    var lut = new KVS.MarchingCubesTable();
 
     var smin = volume.min_value;
     var smax = volume.max_value;
-    isovalue = KVS.Clamp( isovalue, smin, smax );
 
-    var lut = new KVS.MarchingCubesTable();
-    var cell_index = 0;
     var counter = 0;
     for ( var z = 0; z < volume.resolution.z - 1; z++ )
     {
@@ -16,19 +21,7 @@ function Isosurfaces( volume, isovalue )
         {
             for ( var x = 0; x < volume.resolution.x - 1; x++ )
             {
-		var jv0 = new THREE.Vector3( x , y , z);
-                var jv1 = new THREE.Vector3( x+1 , y , z );
-                var jv2 = new THREE.Vector3( x+1 ,y+1 , z ) ;
-                var jv3 = new THREE.Vector3( x , y+1 , z  );
-                var jv4 = new THREE.Vector3( x , y , z+1 );
-                var jv5 = new THREE.Vector3( x+1 , y , z+1 );
-		var jv6 = new THREE.Vector3( x+1 , y+1 , z+1 );
-                var jv7 = new THREE.Vector3( x , y+1 , z+1 );
-				
-                //var indices = cell_node_indices( cell_index++ );
-		
-                var index = table_index( jv0,jv1,jv2,jv3,jv4,jv5,jv6,jv7 );
-		
+                var index = table_index( x, y, z );
                 if ( index == 0 ) { continue; }
                 if ( index == 255 ) { continue; }
 
@@ -52,7 +45,6 @@ function Isosurfaces( volume, isovalue )
                     var v4 = new THREE.Vector3( x + vid4[0], y + vid4[1], z + vid4[2] );
                     var v5 = new THREE.Vector3( x + vid5[0], y + vid5[1], z + vid5[2] );
 
-		   		    
                     var v01 = interpolated_vertex( v0, v1 );
                     var v23 = interpolated_vertex( v2, v3 );
                     var v45 = interpolated_vertex( v4, v5 );
@@ -60,163 +52,121 @@ function Isosurfaces( volume, isovalue )
                     geometry.vertices.push( v01 );
                     geometry.vertices.push( v23 );
                     geometry.vertices.push( v45 );
+
+		    // Create color map
+		    var cmap = [];
+
 		    
+		    for ( var i = 0; i < 256 ; i++ )
+		    {	
+			var S = i/255.0; // [0,1]
+			var R = Math.max( Math.cos( ( S - 1.0 ) * Math.PI ), 0.0 );
+			var G = Math.max( Math.cos( ( S - 0.5 ) * Math.PI ), 0.0 );
+			var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
+			cmap.push( new THREE.Color( R, G, B ) );
+    }
 
-                    var id0 = counter++;
-                    var id1 = counter++;
-                    var id2 = counter++;
-                    geometry.faces.push( new THREE.Face3( id0, id1, id2 ) );
+                    var s0 = interpolated_value( v0, v1 );
+                    var s1 = interpolated_value( v2, v3 );
+                    var s2 = interpolated_value( v4, v5 );
+                    var c0 = cmap[s0];
+                    var c1 = cmap[s1];
+                    var c2 = cmap[s2];
 
+		    var id0 = counter++;
+		    var id1 = counter++;
+		    var id2 = counter++;
+
+                    var face = new THREE.Face3( id0 , id1 , id2 );
+                    face.vertexColors.push( c0 );
+                    face.vertexColors.push( c1 );
+                    face.vertexColors.push( c2 );
+                    geometry.faces.push( face );
+                   
                 }
             }
-            cell_index++;
         }
-        cell_index += volume.resolution.x;
     }
-
-    geometry.computeVertexNormals();
-
-
-    var cmap = [];
-    for ( var i = 0; i < 256; i++ )
-    {
-        var S = i / 255.0; // [0,1]
-        var R = Math.max( Math.cos( ( S - 1.0 ) * Math.PI ), 0.0 );
-        var G = Math.max( Math.cos( ( S - 0.5 ) * Math.PI ), 0.0 );
-        var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
-        var color = new THREE.Color( R, G, B );
-        cmap.push( [ S, '0x' + color.getHexString() ] );
-    }
-
-
-    var color = new THREE.Color().setHex( cmap[ isovalue ][1] );
-
-    material.color = color;
 
     return new THREE.Mesh( geometry, material );
 
-
-    function cell_node_indices( cell_index )
+    function table_index( x, y, z )
     {
-        var lines = volume.resolution.x;
-        var slices = volume.resolution.x * volume.resolution.y;
+        var s0 = plane_function( x,     y,     z     );
+        var s1 = plane_function( x + 1, y,     z     );
+        var s2 = plane_function( x + 1, y + 1, z     );
+        var s3 = plane_function( x,     y + 1, z     );
+        var s4 = plane_function( x,     y,     z + 1 );
+        var s5 = plane_function( x + 1, y,     z + 1 );
+        var s6 = plane_function( x + 1, y + 1, z + 1 );
+        var s7 = plane_function( x,     y + 1, z + 1 );
 
-        var id0 = cell_index;
-        var id1 = id0 + 1;
-        var id2 = id1 + lines;
-        var id3 = id0 + lines;
-        var id4 = id0 + slices;
-        var id5 = id1 + slices;
-        var id6 = id2 + slices;
-        var id7 = id3 + slices;
+        var index = 0;
+        if ( s0 > 0 ) { index |=   1; }
+        if ( s1 > 0 ) { index |=   2; }
+        if ( s2 > 0 ) { index |=   4; }
+        if ( s3 > 0 ) { index |=   8; }
+        if ( s4 > 0 ) { index |=  16; }
+        if ( s5 > 0 ) { index |=  32; }
+        if ( s6 > 0 ) { index |=  64; }
+        if ( s7 > 0 ) { index |= 128; }
 
-        return [ id0, id1, id2, id3, id4, id5, id6, id7 ];
+        return index;
     }
-
- 
-    function table_index ( v0 , v1 , v2 , v3 , v4 , v5 , v6 , v7 ){
-
-
-	var index = 0;
-        if ( -v0.x-v0.y+8*v0.z >= 0 ) { index |=   1; }
-        if ( -v1.x-v1.y+8*v1.z >= 0 ) { index |=   2; }
-        if ( -v2.x-v2.y+8*v2.z >= 0 ) { index |=   4; }
-        if ( -v3.x-v3.y+8*v3.z >= 0 ) { index |=   8; }
-        if ( -v4.x-v4.y+8*v4.z >= 0 ) { index |=  16; }
-        if ( -v5.x-v5.y+8*v5.z >= 0 ) { index |=  32; }
-        if ( -v6.x-v6.y+8*v6.z >= 0 ) { index |=  64; }
-        if ( -v7.x-v7.y+8*v7.z >= 0 ) { index |= 128; }
-
-	return index;
-
-    }
-    
-
-    /* function table_index( indices )
-       {
-       var s0 = volume.values[ indices[0] ][0];
-       var s1 = volume.values[ indices[1] ][0];
-       var s2 = volume.values[ indices[2] ][0];
-       var s3 = volume.values[ indices[3] ][0];
-       var s4 = volume.values[ indices[4] ][0];
-       var s5 = volume.values[ indices[5] ][0];
-       var s6 = volume.values[ indices[6] ][0];
-       var s7 = volume.values[ indices[7] ][0];
-
-       var index = 0;
-       if ( s0 > isovalue ) { index |=   1; }
-       if ( s1 > isovalue ) { index |=   2; }
-       if ( s2 > isovalue ) { index |=   4; }
-       if ( s3 > isovalue ) { index |=   8; }
-       if ( s4 > isovalue ) { index |=  16; }
-       if ( s5 > isovalue ) { index |=  32; }
-       if ( s6 > isovalue ) { index |=  64; }
-       if ( s7 > isovalue ) { index |= 128; }
-
-       return index;
-       }*/
-
-    /* function interpolated_vertex( v0, v1, s )
-       {
-       var lines = volume.resolution.x;
-       var slices = volume.resolution.x * volume.resolution.y;
-       
-       var index0 = v0.x + v0.y * lines + v0.z * slices;
-       var index1 = v1.x + v1.y * lines + v1.z * slices;
-
-       var s0 = volume.values[ index0 ][0];
-       var s1 = volume.values[ index1 ][0];
-
-
-       var p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-       var x = ( v1.x - v0.x)*p/2 + ( v0.x + v1.x )/2;
-
-       p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-       var y = ( v1.y - v0.y)*p/2 + ( v0.y + v1.y )/2;
-
-       p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-       var z = ( v1.z - v0.z )*p/2 + ( v0.z + v1.z )/2;
-
-       
-       return new THREE.Vector3( x , y , z );
-       
-       }*/
 
     function interpolated_vertex( v0, v1 )
     {
-	var lines = volume.resolution.x;
-	var slices = volume.resolution.x * volume.resolution.y;
-	
-	var index0 = v0.x + v0.y * lines + v0.z * slices;
-	var index1 = v1.x + v1.y * lines + v1.z * slices;
-
-	if( v0.x != v1.x){
+	if( v0.x != v1.x ){
 	    var s0 = v0.x;
 	    var s1 = v1.x;
-	    var s =  -v0.y + 8*v0.z;
+	    var s =  (-coef.y * v0.y - coef.z * v0.z -coef.w) / coef.x;
 	}
-	if( v0.y != v1.y){
+	if( v0.y != v1.y ){
 	    var s0 = v0.y;
 	    var s1 = v1.y;
-	    var s =  -v0.x + 8*v0.z;
+	    var s =   (-coef.x * v0.x - coef.z * v0.z -coef.w) / coef.y;
 	}
-	if( v0.z != v1.z){
+	if( v0.z != v1.z ){
 	    var s0 = v0.z;
 	    var s1 = v1.z;
-	    var s =  (v0.x + v0.y)/8;
+	    var s =  (-coef.x * v0.x - coef.y * v0.y -coef.w) / coef.z;
 	}
 
-	var p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-	var x = ( v1.x - v0.x)*p/2 + ( v0.x + v1.x )/2;
+	var p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
+	var x = ( v1.x - v0.x)*p/2 + ( v0.x + v1.x ) / 2;
 
 	p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-	var y = ( v1.y - v0.y)*p/2 + ( v0.y + v1.y )/2;
+	var y = ( v1.y - v0.y ) * p / 2 + ( v0.y + v1.y ) / 2;
 
-	p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
-	var z = ( v1.z - v0.z )*p/2 + ( v0.z + v1.z )/2;
+	p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
+	var z = ( v1.z - v0.z ) * p / 2 + ( v0.z + v1.z ) / 2;
 
 	
         return new THREE.Vector3( x , y , z );
-	
+    }
+
+    function interpolated_value( v0, v1 )
+    {
+        var s0 = plane_function( v0.x, v0.y, v0.z );
+        var s1 = plane_function( v1.x, v1.y, v1.z );
+        var a = Math.abs( s0 / ( s1 - s0 ) );
+
+        var id0 = index_of( v0 );
+        var id1 = index_of( v1 );
+
+        return volume.values[id0][0]*(1-a) + volume.values[id1][0]*a ;
+
+        function index_of( v )
+        {
+            var lines = volume.resolution.x;
+            var slices = volume.resolution.x * volume.resolution.y;
+            return Math.floor( v.x + v.y * lines + v.z * slices );
+        }
+    }
+
+    function plane_function( x, y, z )
+    {
+        return coef.x * x + coef.y * y + coef.z * z + coef.w;
     }
 }
+

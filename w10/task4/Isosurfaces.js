@@ -102,14 +102,14 @@ function Isosurfaces( volume, point, normal )
         var s7 = plane_function( x,     y + 1, z + 1 );
 
         var index = 0;
-        if ( s0 >= 0 ) { index |=   1; }
-        if ( s1 >= 0 ) { index |=   2; }
-        if ( s2 >= 0 ) { index |=   4; }
-        if ( s3 >= 0 ) { index |=   8; }
-        if ( s4 >= 0 ) { index |=  16; }
-        if ( s5 >= 0 ) { index |=  32; }
-        if ( s6 >= 0 ) { index |=  64; }
-        if ( s7 >= 0 ) { index |= 128; }
+        if ( s0 > 0 ) { index |=   1; }
+        if ( s1 > 0 ) { index |=   2; }
+        if ( s2 > 0 ) { index |=   4; }
+        if ( s3 > 0 ) { index |=   8; }
+        if ( s4 > 0 ) { index |=  16; }
+        if ( s5 > 0 ) { index |=  32; }
+        if ( s6 > 0 ) { index |=  64; }
+        if ( s7 > 0 ) { index |= 128; }
 
         return index;
     }
@@ -120,19 +120,22 @@ function Isosurfaces( volume, point, normal )
 	    var s0 = v0.x;
 	    var s1 = v1.x;
 	    var s =  (-coef.y * v0.y - coef.z * v0.z -coef.w) / coef.x;
+	    return new THREE.Vector3( s , v0.y , v0.z );
 	}
 	if( v0.y != v1.y ){
 	    var s0 = v0.y;
 	    var s1 = v1.y;
 	    var s =   (-coef.x * v0.x - coef.z * v0.z -coef.w) / coef.y;
+	    return new THREE.Vector3( v0.x , s , v0.z );
 	}
 	if( v0.z != v1.z ){
 	    var s0 = v0.z;
 	    var s1 = v1.z;
 	    var s =  (-coef.x * v0.x - coef.y * v0.y -coef.w) / coef.z;
+	    return new THREE.Vector3( v0.x , v0.y , s );
 	}
 
-	var p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
+	/*var p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
 	var x = ( v1.x - v0.x)*p/2 + ( v0.x + v1.x ) / 2;
 
 	p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
@@ -141,19 +144,39 @@ function Isosurfaces( volume, point, normal )
 	p = ( 2*s - ( s0 + s1 ) ) / ( s1 - s0 );
 	var z = ( v1.z - v0.z ) * p / 2 + ( v0.z + v1.z ) / 2;
 
-	return new THREE.Vector3( x , y , z );
+	return new THREE.Vector3( x , y , z );*/
     }
 
     function interpolated_value( v0, v1 )
     {
-        var s0 = plane_function( v0.x, v0.y, v0.z );
+       /* var s0 = plane_function( v0.x, v0.y, v0.z );
         var s1 = plane_function( v1.x, v1.y, v1.z );
-        var a = Math.abs( s0 / ( s1 - s0 ) );
+        var a = Math.abs( s0 / ( s1 - s0 ) );*/
 
         var id0 = index_of( v0 );
         var id1 = index_of( v1 );
 
-        return volume.values[id0][0]*(1-a) + volume.values[id1][0]*a ;
+	var s0  = volume.values[id0][0];
+	var s1  = volume.values[id1][0]
+
+	var v01 = interpolated_vertex( v0 , v1 );
+
+	if( v0.x != v1.x){
+	    var p = ( 2*v01.x - ( v0.x + v1.x ) )/( v1.x - v0.x );
+	    var s01 = ( s1 - s0 )*p/2 + ( s0 + s1 )/2;
+	}
+
+	if( v0.y != v1.y){
+	    var p = ( 2*v01.y - ( v0.y + v1.y ) )/( v1.y - v0.y );
+	    var s01 = ( s1 - s0 )*p/2 + ( s0 + s1 )/2;
+	}
+
+	if( v0.z != v1.z){
+	    var p = ( 2*v01.z - ( v0.z + v1.z ) )/( v1.z - v0.z );
+	    var s01 = ( s1 - s0 )*p/2 + ( s0 + s1 )/2;
+	}
+	
+	return  Math.round( s01 );
 
         function index_of( v )
         {

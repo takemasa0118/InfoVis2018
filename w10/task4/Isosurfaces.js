@@ -66,7 +66,7 @@ function Isosurfaces( volume, point, normal )
 			cmap.push( new THREE.Color( R, G, B ) );
 		    }
 
-                    var s0 = interpolated_value( v0, v1 );
+		    var s0 = interpolated_value( v0, v1 );
                     var s1 = interpolated_value( v2, v3 );
                     var s2 = interpolated_value( v4, v5 );
                     var c0 = cmap[s0];

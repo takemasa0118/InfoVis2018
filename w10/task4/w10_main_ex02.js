@@ -14,11 +14,7 @@ function main()
     screen.scene.add( bounds );
 
     var point = new THREE.Vector3(60,60,17);
-<<<<<<< HEAD
     var normal = new THREE.Vector3(1,0,4);
-=======
-    var normal = new THREE.Vector3(0,0,1);
->>>>>>> 5e65dfd6ffc2395b7c1b3044d87b2ecc50385cca
     var surfaces = Isosurfaces( volume, point , normal );
     screen.scene.add( surfaces );
 

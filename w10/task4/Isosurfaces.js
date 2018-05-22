@@ -64,11 +64,7 @@ function Isosurfaces( volume, point, normal )
 			var G = Math.max( Math.cos( ( S - 0.5 ) * Math.PI ), 0.0 );
 			var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
 			cmap.push( new THREE.Color( R, G, B ) );
-
 		    }
-
-    }
-
 
                     var s0 = interpolated_value( v0, v1 );
                     var s1 = interpolated_value( v2, v3 );
@@ -86,11 +82,7 @@ function Isosurfaces( volume, point, normal )
                     face.vertexColors.push( c1 );
                     face.vertexColors.push( c2 );
                     geometry.faces.push( face );
-<<<<<<< HEAD
                     
-=======
-                   
->>>>>>> 5e65dfd6ffc2395b7c1b3044d87b2ecc50385cca
                 }
             }
         }

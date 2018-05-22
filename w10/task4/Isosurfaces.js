@@ -64,11 +64,11 @@ function Isosurfaces( volume, point, normal )
 			var G = Math.max( Math.cos( ( S - 0.5 ) * Math.PI ), 0.0 );
 			var B = Math.max( Math.cos( S * Math.PI ), 0.0 );
 			cmap.push( new THREE.Color( R, G, B ) );
-<<<<<<< HEAD
+
 		    }
-=======
+
     }
->>>>>>> 5e65dfd6ffc2395b7c1b3044d87b2ecc50385cca
+
 
                     var s0 = interpolated_value( v0, v1 );
                     var s1 = interpolated_value( v2, v3 );

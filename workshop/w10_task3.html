@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <title>W10: Task 03</title>
+  </head>
+  <body style="margin:0">
+    <div id="display" style="width: 80%; float: left;"></div>
+    <div id="controller" style="width:20%; float:left;">
+      <label id="label" style="font-family:Arial;"></label>
+      <input type="range" min="0" max="1" step="0.01" value="0.5"
+	     id="isovalue"/>
+      <span id="value">0.5</span>
+      <button id="change-isovalue-button" style="font-family=Arial;">
+	Apply</button>
+    </div>
+    
+    <script src="three.min.js"></script>
+    <script src="http://threejs.org/examples/js/math/Lut.js"></script>
+    <script src="KVS.min.js"></script>
+    <script src="KVS2THREE.min.js"></script>
+    <script src="KVSLobsterData.js"></script>
+    <script src="Bounds.js"></script>
+    <script src="Isosurfaces.js"></script>
+  
+ 
+
+   	<script type="x-shader/x-vertex" id="gouraud.vert">
+	  varying vec3 point_color;
+	  varying vec4 point_position;
+	  varying vec3 normal_vector;
+	  uniform vec3 light_position;
+
+	  vec3 LambertianReflection( vec3 C, vec3 L, vec3 N )
+	  {
+	  float ka = 0.4;
+	  float kd = 0.6;
+	  float dd = max( dot( N, L ), 0.0 );
+	  float Ia = ka;
+	  float Id = kd * dd;
+	  return C * ( Ia + Id );
+	  }
+
+	  
+	 void main()
+	 {
+	  point_position = modelViewMatrix * vec4( position, 1.0 );
+	  normal_vector = normalMatrix * normal;
+	  vec3 C = color;
+	  vec3 L = normalize( light_position - point_position.xyz );
+	  vec3 N = normalize( normal_vector );
+	  point_color = LambertianReflection( C, L, N );
+	  gl_Position = projectionMatrix * point_position;
+	 }
+	</script>
+
+	<script type="x-shader/x-fragment" id="gouraud.frag">
+	  varying vec3 point_color;
+	  
+	 void main()
+	 {
+	    gl_FragColor = vec4( point_color, 1.0 );
+	 }
+	</script>
+
+	<script src="TrackballControls.js"></script>
+	<script src="w10_main_ex02.js"></script>
+	<script>
+	  var rate = document.getElementById('isovalue');
+	  var target = document.getElementById('value');
+	  var rangeValue = function (rate, target) {
+	    return function(evt){
+	      target.innerHTML = rate.value;
+	    }
+	  }
+	  rate.addEventListener('input', rangeValue(rate, target));
+	  
+	  var isovalue = Math.floor(rate.value * 256);
+	  main(isovalue);
+	</script>
+  </body>
+</html>

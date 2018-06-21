@@ -1,0 +1,6 @@
+機能説明
+左上のレンジ入力欄で、0~255の等値面を設定できる。
+また、中央上のチェックボタンで、Gouraud Shading, Phong Shading, Sliceを選択できる。それぞれの機能は、
+Gouraud Shading: Gouraud Shadingで等値面を描画する。
+Phong Shading: Phong Shadingで等値面を描画する。
+Slice: 右の入力欄で設定されたある点(point)と、ある法線ベクトル(normal)で決まる平面を描画する。

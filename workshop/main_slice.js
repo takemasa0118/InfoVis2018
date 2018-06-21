@@ -1,11 +1,10 @@
-function main(isovalue)
+function main_slice( point, normal)
 {
     var volume = new KVS.LobsterData();
     var screen = new KVS.THREEScreen();
     var scene = new THREE.Scene();
 
     screen.init( volume, {
-	width: window.innerWidth * 0.8,
         width: window.innerWidth,
         height: window.innerHeight,
         enableAutoResize: false
@@ -14,8 +13,8 @@ function main(isovalue)
     var bounds = Bounds( volume );
     screen.scene.add( bounds );
 
-    //var isovalue = 128;
-    var surfaces = Isosurfaces( volume, isovalue );
+
+    var surfaces = Slices( volume, point , normal );
     screen.scene.add( surfaces );
 
     document.addEventListener( 'mousemove', function() {
@@ -23,21 +22,21 @@ function main(isovalue)
     });
 
     window.addEventListener( 'resize', function() {
-        screen.resize( [ window.innerWidth * 0.8,, window.innerHeight ] );
+        screen.resize( [ window.innerWidth, window.innerHeight ] );
     });
 
-   
+
     var light = new THREE.PointLight();
     light.position.set( 5, 5, 5 );
     screen.scene.add( light );
 
-   
+
     var material = new THREE.ShaderMaterial({
         vertexColors: THREE.VertexColors,
         vertexShader: document.getElementById('gouraud.vert').text,
         fragmentShader: document.getElementById('gouraud.frag').text,
     });
 
-    
+
     screen.loop();
 }

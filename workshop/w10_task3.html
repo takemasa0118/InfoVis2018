@@ -1,80 +1,168 @@
 <html>
-  <head>
-    <title>W10: Task 03</title>
-  </head>
-  <body style="margin:0">
-    <div id="display" style="width: 80%; float: left;"></div>
-    <div id="controller" style="width:20%; float:left;">
-      <label id="label" style="font-family:Arial;"></label>
-      <input type="range" min="0" max="1" step="0.01" value="0.5"
-	     id="isovalue"/>
-      <span id="value">0.5</span>
-      <button id="change-isovalue-button" style="font-family=Arial;">
-	Apply</button>
-    </div>
+
+<head>
+  <title>W15: Work shop</title>
+</head>
+
+<body style="margin:0">
+  <div id="display" style="width: 70%; float: left;"></div>
+  <div id="controller" style="width:30%; float:left;">
+    <label id="label" style="font-family:Arial;"></label>
+    <input type="range" min="0" max="1" step="0.01" value="0.5" id="isovalue" />
+    <span id="char_isovalue">isovalue = </span>
+    <span id="value">128</span>    
+    <input type="radio" id="gouraud" name="shading" value="1" checked="checked" style="position: absolute; left: 30%; top: 0%" />
+    <span id="char_gouraud" style="position: absolute; left: 33%; top: 0%" />Gouraud Shading</span>
+    <input type="radio" id="phong" name="shading" value="2" style="position: absolute; left: 30%; top: 3%" />
+    <span id="char_phong" style="position: absolute; left: 33%; top: 3%" />Phong Shading</span>
+    <input type="radio" id="slice" name="shading" value="3" style="position: absolute; left: 30%; top: 6%" />
+    <span id="char_phong" style="position: absolute; left: 33%; top: 6%" />Slice</span>
+    <span id="char_point" style="position: absolute; left: 48%; top: 6%" />point:</span>
+    <span id="char_pointx" style="position: absolute; left: 55%; top: 6%" />x:</span>
+    <input id="pointx" type="text" size="2" value="60" style="position: absolute; left: 58%; top: 6%" />
+    <span id="char_pointy" style="position: absolute; left: 65%; top: 6%" />y:</span>
+    <input id="pointy" type="text" size="2" value="60" style="position: absolute; left: 70%; top: 6%" />
+    <span id="char_pointz" style="position: absolute; left: 75%; top: 6%" />z:</span>
+    <input id="pointz" type="text" size="2" value="17" style="position: absolute; left: 80%; top: 6%" />
+    <span id="char_normal" style="position: absolute; left: 80%; top: 8%" />normal vector:</span>
+    <span id="char_normalx" style="position: absolute; left: 85%; top: 6%" />x:</span>
+    <input id="normalx" type="text" size="2" value="1" style="position: absolute; left: 58%; top: 6%" />
+    <span id="char_normaly" style="position: absolute; left: 90%; top: 6%" />y:</span>
+    <input id="normaly" type="text" size="2" value="0" style="position: absolute; left: 70%; top: 6%" />
+    <span id="char_normalz" style="position: absolute; left: 95%; top: 6%" />z:</span>
+    <input id="normalz" type="text" size="2" value="4" style="position: absolute; left: 80%; top: 6%" />
+
+  </div>
+
+  <script src="three.min.js"></script>
+  <script src="http://threejs.org/examples/js/math/Lut.js"></script>
+  <script src="KVS.min.js"></script>
+  <script src="KVS2THREE.min.js"></script>
+  <script src="KVSLobsterData.js"></script>
+  <script src="Bounds.js"></script>
+  <script src="Isosurfaces.js"></script>
+  <script src="Slices.js"></script>
+
+
+  <!-- Gouraud Shading -->
+  <script type="x-shader/x-vertex" id="gouraud.vert">
+    varying vec3 point_color; varying vec4 point_position; varying vec3 normal_vector; uniform vec3 light_position; vec3 LambertianReflection( vec3 C, vec3 L, vec3 N ) { float ka = 0.4; float kd = 0.6; float dd = max( dot( N, L ), 0.0 ); float Ia = ka; float
+    Id = kd * dd; return C * ( Ia + Id ); } void main() { point_position = modelViewMatrix * vec4( position, 1.0 ); normal_vector = normalMatrix * normal; vec3 C = color; vec3 L = normalize( light_position - point_position.xyz ); vec3 N = normalize( normal_vector
+    ); point_color = LambertianReflection( C, L, N ); gl_Position = projectionMatrix * point_position; }
+  </script>
+
+  <script type="x-shader/x-fragment" id="gouraud.frag">
+    varying vec3 point_color; void main() { gl_FragColor = vec4( point_color, 1.0 ); }
+  </script>
+
+  <!-- Phong Shading -->
+  <script type="x-shader/x-vertex" id="phong.vert">
+    varying vec3 point_color; varying vec4 point_position; varying vec3 normal_vector; void main() { point_color = color; point_position = modelViewMatrix * vec4(position, 1.0); normal_vector = normalMatrix * normal; gl_Position = projectionMatrix * point_position;
+    }
+  </script>
+  <script type="x-shader/x-fragment" id="phong.frag">
+    varying vec3 point_color; varying vec4 point_position; varying vec3 normal_vector; uniform vec3 light_position; uniform vec3 camera_position; vec3 LambertianReflection( vec3 C, vec3 L, vec3 N ) { float ka = 0.2; float kd = 0.7; float dd = max( dot( N,
+    L ), 0.0 ); float Ia = ka; float Id = kd * dd; return C * ( Ia + Id ); } void main() { vec3 C = point_color; vec3 L = normalize(light_position - point_position.xyz); vec3 N = normalize(normal_vector); vec3 V = normalize(camera_position - point_position.xyz);
+    vec3 shaded_color = LambertianReflection(C,L,N); gl_FragColor = vec4(shaded_color,1.0); }
+  </script>
+
+  <script src="TrackballControls.js"></script>
+  <script src="main_gouraud.js"></script>
+  <script src="main_phong.js"></script>
+  <script src="main_slice.js"></script>
+  <script>
+    var rate = document.getElementById('isovalue');
+    var target = document.getElementById('value');
+    var rangeValue = function(rate, target) {
+      return function(evt) {
+        var isovalue = Math.floor(rate.value * 256);
+        target.innerHTML = isovalue;
+      }
+    }
+    rate.addEventListener('input', rangeValue(rate, target));
+
+   
+
+    var gMain = function() {
+      return function(evt) {
+        var isovalue = Math.floor(rate.value * 256);
+        main_gouraud(isovalue);
+      }
+    }
+
+    var pMain = function() {
+      return function(evt) {
+        var isovalue = Math.floor(rate.value * 256);
+        main_phong(Number(isovalue));
+      }
+    }
+
+    var sMain = function() {
+      return function(evt) {
+        var px = document.getElementById('pointx').value;
+        var py = document.getElementById('pointy').value;
+        var pz = document.getElementById('pointz').value;
+        var nx = document.getElementById('normalx').value;
+        var ny = document.getElementById('normaly').value;
+        var nz = document.getElementById('normalz').value;
+        //  var input2 = document.getElementById('input2').value;
+        //  var input1Arr = String(input1).split('');
+        //  var input2Arr = String(input2).split('');
+        //var char1 = judge(input1Arr);
+        // var char2 = judge(input2Arr);
+        var point = new THREE.Vector3(parseInt(px,10),parseInt(py,10),parseInt(pz,10));
+        var normal = new THREE.Vector3(parseInt(nx,10),parseInt(ny,10),parseInt(nz,10));
+        main_slice(point, normal);
+      }
+    }
+
+    var judge = function(inputArr) {
+      var k = 0;
+      var count = 0;
+      var char;
+
+      for (var i = 0; i < 0; i++) {
+        if (inputArr[i] == "(") {
+          continue;
+        } else if (inputArr[i] == ")") {
+          break;
+        } else if (inputArr[i] == ",") {
+          continue;
+        } else {
+
+          if (inputArr[i + 1] == "," || inputArr[i + 1] == ")") {
+            for (var j = number; count < 1; j++) {
+
+              char[k] += inputArr[j];
+              count--;
+            }
+            k++;
+          } else {
+            count++;
+            if (count == 1) {
+              number = i;
+            }
+            if (count == 2) {
+              number = i - 1;
+            }
+          }
+        }
+      }
+      return char;
+     }
+
+      
+
+    document.getElementById('gouraud').onclick = gMain();
+    document.getElementById('phong').onclick = pMain();
+    document.getElementById('slice').onclick = sMain();
+					 
+    var isovalue = Math.floor(rate.value * 256);
+					 
+    //document.getElementById('change-isovalue-button').onclick = flagJudge();
+
     
-    <script src="three.min.js"></script>
-    <script src="http://threejs.org/examples/js/math/Lut.js"></script>
-    <script src="KVS.min.js"></script>
-    <script src="KVS2THREE.min.js"></script>
-    <script src="KVSLobsterData.js"></script>
-    <script src="Bounds.js"></script>
-    <script src="Isosurfaces.js"></script>
-  
- 
+  </script>
+</body>
 
-   	<script type="x-shader/x-vertex" id="gouraud.vert">
-	  varying vec3 point_color;
-	  varying vec4 point_position;
-	  varying vec3 normal_vector;
-	  uniform vec3 light_position;
-
-	  vec3 LambertianReflection( vec3 C, vec3 L, vec3 N )
-	  {
-	  float ka = 0.4;
-	  float kd = 0.6;
-	  float dd = max( dot( N, L ), 0.0 );
-	  float Ia = ka;
-	  float Id = kd * dd;
-	  return C * ( Ia + Id );
-	  }
-
-	  
-	 void main()
-	 {
-	  point_position = modelViewMatrix * vec4( position, 1.0 );
-	  normal_vector = normalMatrix * normal;
-	  vec3 C = color;
-	  vec3 L = normalize( light_position - point_position.xyz );
-	  vec3 N = normalize( normal_vector );
-	  point_color = LambertianReflection( C, L, N );
-	  gl_Position = projectionMatrix * point_position;
-	 }
-	</script>
-
-	<script type="x-shader/x-fragment" id="gouraud.frag">
-	  varying vec3 point_color;
-	  
-	 void main()
-	 {
-	    gl_FragColor = vec4( point_color, 1.0 );
-	 }
-	</script>
-
-	<script src="TrackballControls.js"></script>
-	<script src="w10_main_ex02.js"></script>
-	<script>
-	  var rate = document.getElementById('isovalue');
-	  var target = document.getElementById('value');
-	  var rangeValue = function (rate, target) {
-	    return function(evt){
-	      target.innerHTML = rate.value;
-	    }
-	  }
-	  rate.addEventListener('input', rangeValue(rate, target));
-	  
-	  var isovalue = Math.floor(rate.value * 256);
-	  main(isovalue);
-	</script>
-  </body>
 </html>

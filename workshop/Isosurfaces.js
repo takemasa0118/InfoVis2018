@@ -40,8 +40,8 @@ function Isosurfaces( volume, isovalue )
                     var v3 = new THREE.Vector3( x + vid3[0], y + vid3[1], z + vid3[2] );
                     var v4 = new THREE.Vector3( x + vid4[0], y + vid4[1], z + vid4[2] );
                     var v5 = new THREE.Vector3( x + vid5[0], y + vid5[1], z + vid5[2] );
-		    
-		    
+
+
                     var v01 = interpolated_vertex( v0, v1, isovalue );
                     var v23 = interpolated_vertex( v2, v3, isovalue );
                     var v45 = interpolated_vertex( v4, v5, isovalue );
@@ -49,7 +49,7 @@ function Isosurfaces( volume, isovalue )
                     geometry.vertices.push( v01 );
                     geometry.vertices.push( v23 );
                     geometry.vertices.push( v45 );
-		   
+
 
                     var id0 = counter++;
                     var id1 = counter++;
@@ -82,7 +82,10 @@ function Isosurfaces( volume, isovalue )
 
     material.color = color;
 
-    return new THREE.Mesh( geometry, material );
+    var mesh =  new THREE.Mesh( geometry, material );
+
+    //return new THREE.Mesh( geometry, material );
+    return mesh;
 
 
     function cell_node_indices( cell_index )
@@ -131,7 +134,7 @@ function Isosurfaces( volume, isovalue )
     {
 	var lines = volume.resolution.x;
 	var slices = volume.resolution.x * volume.resolution.y;
-	
+
 	var index0 = v0.x + v0.y * lines + v0.z * slices;
 	var index1 = v1.x + v1.y * lines + v1.z * slices;
 
@@ -148,8 +151,8 @@ function Isosurfaces( volume, isovalue )
 	p = ( 2*s - ( s0 + s1 ) )/( s1 - s0 );
 	var z = ( v1.z - v0.z )*p/2 + ( v0.z + v1.z )/2;
 
-	
+
             return new THREE.Vector3( x , y , z );
-		
+
     }
 }
